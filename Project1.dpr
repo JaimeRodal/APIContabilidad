@@ -1,5 +1,6 @@
 ﻿{$APPTYPE CONSOLE}
 
+// Primer paso "importar" las librerías que vamos a usar, intenté usar base de datos PostgreSQL pero no encontré soporte para la edición community
 uses
   System.SysUtils, System.JSON, System.Generics.Collections,
   Horse, Horse.Jhonson, System.Classes,
@@ -10,6 +11,7 @@ uses
 var
   FDConnection: TFDConnection;
 
+// Segundo paso iniciar la base de datos, es importante tener la bd en la misma carpeta que el proyecto
 procedure ConfigurarBD;
 begin
   FDConnection := TFDConnection.Create(nil);
@@ -60,21 +62,27 @@ var
   CodigoCuentaNode: IXMLNode;
   CodigoCuentaValue: TJSONValue;
   w: integer;
+
+// Detectamos si el formato del contenido es JSON o XML ( usamos dos librerias, una para cada formato)
 begin
   ContentType := Req.RawWebRequest.ContentType.ToLower;
   SetLength(ApuntesTemp, 0);
   TotalDebe := 0;
   TotalHaber := 0;
 
-  //  PARSE JSON
+  //  En caso de ser JSON se procede con este condicional
+
   if ContentType.Contains('application/json') then
   begin
+  // Extraemos los campos de fecha, descripción y el array de apuntes
     Body := Req.Body<TJSONObject>;
     Fecha := Body.GetValue<TDateTime>('fecha_operacion');
     Descripcion := Body.GetValue<string>('descripcion');
     Apuntes := Body.GetValue<TJSONArray>('apuntes');
 
     SetLength(ApuntesTemp, Apuntes.Count);
+
+  // Este bucle nos valida que cada apunte sea correcto, es decir, DEBE/HABER , importe > 0 y cuenta no vacía
     for i := 0 to Apuntes.Count - 1 do
     begin
       ApuntesTemp[i] := Apuntes.Items[i] as TJSONObject;
@@ -95,10 +103,10 @@ begin
     end;
   end
 
-  //  PARSE XML
+  // En caso de ser XML procedemos con otro condicional
   else if ContentType.Contains('application/xml') or ContentType.Contains('text/xml') then
 
-// Parte XML con OmniXML
+// Parte XML con OmniXML, libreria cogida de github
 begin
 
   Stream := TStringStream.Create(Req.Body, TEncoding.UTF8);
@@ -133,7 +141,7 @@ begin
     for i := 0 to ApuntesNode.ChildNodes.Length  - 1 do
     begin
       ApunteNode := ApuntesNode.ChildNodes.Item[i];
-      //
+    
       if (ApunteNode.NodeName <> 'apunte') then
       Continue;
       Writeln('ApunteNode.NodeName = ' + ApunteNode.NodeName);
@@ -180,7 +188,7 @@ SetLength(ApuntesTemp, j);
 end;
 
 
-  // 🔹 VALIDAR PARTIDA DOBLE
+  //  Validamos la partida doble, que la suma del DEBE y el HABER sea igual
   if Abs(TotalDebe - TotalHaber) > 0.001 then
   begin
     var ErrorJSON := TJSONObject.Create;
@@ -194,7 +202,7 @@ end;
     Exit;
   end;
 
-  //  GUARDAR EN BD
+  //  Guardamos en la base de datos con un insert
   Q := TFDQuery.Create(nil);
   try
     Q.Connection := FDConnection;
