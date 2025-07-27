@@ -251,6 +251,9 @@ Se recomienda usar [Postman](https://www.postman.com/) o [curl](https://curl.se/
 
 En caso de POST: http://localhost:9000/api/operaciones
 
+(JSON: https://joint-operations-engineer-1499750-5845704.postman.co/workspace/Jimmy-Lannerb%C3%A4ck's-Workspace~4e56d3c6-d459-4b91-8f10-bbe7a8eed675/request/47070984-46b0199c-726a-4c8a-b241-96a08548d130?action=share&source=copy-link&creator=47070984&ctx=documentation)
+(XML: https://joint-operations-engineer-1499750-5845704.postman.co/workspace/Jimmy-Lannerb%C3%A4ck's-Workspace~4e56d3c6-d459-4b91-8f10-bbe7a8eed675/request/47070984-59fb56d8-64b1-46f3-8e2a-353c5429838e?action=share&source=copy-link&creator=47070984&ctx=documentation)
+
 En caso de GET: http://localhost:9000/api/operaciones/1
  
 ---
